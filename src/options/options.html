@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Extension Options</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Settings</h1>
+
+        <div class="section">
+            <div class="section-header">
+                <h2>File Types to Download</h2>
+                <div class="button-group-small">
+                    <button id="select-all-btn" class="small-btn">Select All</button>
+                    <button id="deselect-all-btn" class="small-btn">Deselect All</button>
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="type-pdf" checked> PDF</label>
+                <label><input type="checkbox" id="type-doc" checked> Google Docs (as PDF)</label>
+                <label><input type="checkbox" id="type-sheet" checked> Google Sheets (as PDF)</label>
+                <label><input type="checkbox" id="type-slide" checked> Google Slides (as PDF)</label>
+                <label><input type="checkbox" id="type-image" checked> Images (JPG, PNG, etc.)</label>
+                <label><input type="checkbox" id="type-video" checked> Videos (MP4, MOV, etc.)</label>
+                <label><input type="checkbox" id="type-zip" checked> Archives (ZIP, RAR, etc.)</label>
+                <label><input type="checkbox" id="type-binary" checked> Other Files</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Download Settings</h2>
+            <label for="folder-name">Destination Folder (inside Downloads):</label>
+            <input type="text" id="folder-name" value="Classroom_Downloads">
+            <p class="hint">Files will be saved to a subfolder within your browser's default Downloads directory.</p>
+        </div>
+
+        <button id="save-btn">Save Settings</button>
+        <div id="status"></div>
+    </div>
+    <script src="options.js"></script>
+</body>
+
+</html>
