@@ -2,18 +2,19 @@
 
 A powerful Chrome extension that automatically extracts and downloads study materials (PDFs, Docs, Slides, Videos, etc.) from Google Classroom.
 
-![GitHub Release](https://img.shields.io/github/v/release/Ekam-Bitt/Google-Classroom-Bulk-Downloader?include_prereleases)
+![GitHub Release](https://img.shields.io/github/v/release/Ekam-Bitt/Google-Classroom-Bulk-Downloader)
 ![License](https://img.shields.io/github/license/Ekam-Bitt/Google-Classroom-Bulk-Downloader)
 [![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](./README.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-## 🚀 Features (V2)
+## 🚀 Features (V3)
 
 *   **⚡️ Automated Expansion**: Automatically clicks "View More" buttons and expands all collapsed classwork items to find every single file.
 *   **🔄 Smart Scrolling**: Handles virtual scrolling and dynamic content loading to ensure no file is missed.
 *   **📂 Bulk Download**: Download dozens of files with a single click.
+*   **� Clean Filenames**: Automatically removes unwanted prefixes and cleans up filenames for better organization.
+*   **⚙️ Easy Settings**: Configure destination folder and file types directly from the popup.
 *   **📄 Smart Conversion**: Automatically converts Google Docs, Sheets, and Slides to PDF for offline viewing.
-*   **⚙️ Advanced Filtering**: Choose exactly what you want to download (PDFs only, Videos, Images, etc.).
 *   **🛡️ Privacy Focused**: Runs entirely on your device. No data is sent to external servers.
 
 ## 📥 Installation
@@ -44,9 +45,8 @@ A powerful Chrome extension that automatically extracts and downloads study mate
 
 ## ⚙️ Configuration
 
-Right-click the extension icon and select **Options** to:
-*   Enable/Disable specific file types (e.g., "Only download PDFs").
-*   Change the default subfolder name.
+*   **Destination Folder**: Change the folder name directly in the popup before downloading.
+*   **File Types**: Right-click the extension icon and select **Options** to filter specific file types (e.g., "Only download PDFs").
 
 ## 🔒 Permissions
 
@@ -57,7 +57,14 @@ Right-click the extension icon and select **Options** to:
 
 ## 🤝 Contributing
 
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
+
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix
+- Proposing new features
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## 📄 License
 
