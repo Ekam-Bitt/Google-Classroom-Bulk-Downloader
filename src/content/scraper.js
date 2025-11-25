@@ -1,22 +1,107 @@
+// Global state for collected files (reset on each new request)
+let collectedFiles = [];
+let collectedUrls = new Set();
 
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "SCRAPE_FILES") {
-        const files = scrapeAttachments();
-        sendResponse({ files: files });
-    }
-    return true; // Keep the message channel open for async response
-});
+if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "SCRAPE_FILES") {
+            // Legacy support or direct scrape
+            const files = scrapeVisibleAttachments();
+            sendResponse({ files: files });
+        } else if (request.action === "EXPAND_AND_SCRAPE") {
+            // New V2 action: Expand then scrape
+            expandAndCollect().then((files) => {
+                sendResponse({ files: files });
+            });
+            return true; // Keep channel open for async response
+        }
+        return true; // Keep the message channel open for async response
+    });
+}
 
-function scrapeAttachments() {
-    const files = [];
-    const seenUrls = new Set();
+async function expandAndCollect() {
+    // Reset collection
+    collectedFiles = [];
+    collectedUrls = new Set();
+
+    // 1. Check for "View more" button and click it repeatedly until gone
+    while (true) {
+        let viewMoreBtn = null;
+        // Retry for up to 5 seconds to handle slow SPA transitions
+        for (let i = 0; i < 10; i++) {
+            // Use querySelectorAll to find ALL buttons, then find the visible one
+            // This handles cases where old hidden buttons remain in the DOM
+            const allBtns = Array.from(document.querySelectorAll('button[aria-label="View more posts"]'));
+            viewMoreBtn = allBtns.find(btn => btn.offsetParent !== null);
+
+            if (viewMoreBtn) break; // Found and visible
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        if (viewMoreBtn) {
+            console.log("Found 'View more' button, clicking...");
+            viewMoreBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            viewMoreBtn.click();
+            // Wait for new items to load
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+            console.log("No more 'View more' buttons found.");
+            break; // Exit loop if no button found
+        }
+    }
+
+    // 2. Find all collapsed items
+    // Selector based on analysis: div[jsname="rQC7Ie"][aria-expanded="false"]
+    // This is the clickable header of the classwork item
+    const collapsedItems = Array.from(document.querySelectorAll('div[jsname="rQC7Ie"][aria-expanded="false"]'));
+
+    // Also scrape whatever is currently visible before we start expanding
+    scrapeVisibleAttachments(true);
+
+    if (collapsedItems.length > 0) {
+        // 3. Expand items sequentially
+        for (const item of collapsedItems) {
+            // Check if item is still in DOM and visible
+            if (!item.isConnected || item.offsetParent === null) continue;
+
+            // Scroll into view to ensure clickability
+            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Click the item
+            item.click();
+
+            // Wait a bit for expansion and DOM mutation
+            // Google Classroom loads attachments dynamically
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // Scrape immediately after expansion while item is in view
+            scrapeVisibleAttachments(true);
+        }
+    }
+
+    // Final scrape to catch anything else
+    scrapeVisibleAttachments(true);
+
+    console.log(`[GC Downloader] Total unique files collected: ${collectedFiles.length}`);
+    return collectedFiles;
+}
+
+function scrapeVisibleAttachments(accumulate = false) {
+    const files = accumulate ? collectedFiles : [];
+    const seenUrls = accumulate ? collectedUrls : new Set();
 
     // Select all anchor tags that might be attachments
     // This is a broad selector, we will filter later
     const anchors = document.querySelectorAll('a[href*="drive.google.com"], a[href*="docs.google.com"]');
 
     anchors.forEach(anchor => {
+        // Check if element is visible
+        // IMPORTANT: We need to check if the anchor OR its parents are visible.
+        // offsetParent is null if display:none, but sometimes elements are just off-screen.
+        // However, for stale data (hidden views), offsetParent should be null.
+        if (anchor.offsetParent === null) return;
+
         let url = anchor.href;
 
         // Clean up URL
@@ -36,16 +121,19 @@ function scrapeAttachments() {
         const type = determineFileType(url, title);
 
         if (type) {
-            files.push({
+            const fileObj = {
                 url: url,
                 title: title || "Untitled",
                 type: type
-            });
+            };
+            files.push(fileObj);
             seenUrls.add(url);
         }
     });
 
-    console.log(`[GC Downloader] Found ${files.length} files.`);
+    if (!accumulate) {
+        console.log(`[GC Downloader] Found ${files.length} files.`);
+    }
     return files;
 }
 

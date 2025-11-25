@@ -45,10 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
             lastScannedUrl = activeTab.url;
 
             if (activeTab.url.includes("classroom.google.com")) {
-                statusDiv.textContent = "Scanning for files...";
+                statusDiv.textContent = "Expanding class items... (This may take a moment)";
 
-                // Try to send message
-                chrome.tabs.sendMessage(activeTab.id, { action: "SCRAPE_FILES" }, (response) => {
+                // Send EXPAND_AND_SCRAPE message
+                chrome.tabs.sendMessage(activeTab.id, { action: "EXPAND_AND_SCRAPE" }, (response) => {
                     if (chrome.runtime.lastError) {
                         console.log("Connection failed, attempting to inject script...");
                         // If message fails, script might not be loaded. Inject it.
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             // Retry sending message after injection
                             setTimeout(() => {
-                                chrome.tabs.sendMessage(activeTab.id, { action: "SCRAPE_FILES" }, (response) => {
+                                chrome.tabs.sendMessage(activeTab.id, { action: "EXPAND_AND_SCRAPE" }, (response) => {
                                     handleResponse(response);
                                 });
                             }, 100);
