@@ -67,13 +67,20 @@ function extractTitle(anchor) {
 }
 
 function determineFileType(url, title) {
-    // Check URL specific patterns first
+    // Check URL specific patterns first for Google Docs (native Google format)
     if (url.includes("/document/d/")) return "DOC";
     if (url.includes("/spreadsheets/d/")) return "SHEET";
     if (url.includes("/presentation/d/")) return "SLIDE";
 
-    // Check extensions in title
+    // Check extensions in title for uploaded files
     const lowerTitle = title.toLowerCase();
+
+    // Office documents (uploaded, not Google Docs)
+    if (lowerTitle.match(/\.(doc|docx)$/)) return "OFFICE_DOC";
+    if (lowerTitle.match(/\.(xls|xlsx)$/)) return "OFFICE_SHEET";
+    if (lowerTitle.match(/\.(ppt|pptx)$/)) return "OFFICE_SLIDE";
+
+    // Other file types
     if (lowerTitle.endsWith(".pdf")) return "PDF";
     if (lowerTitle.match(/\.(jpg|jpeg|png|gif|webp)$/)) return "IMAGE";
     if (lowerTitle.match(/\.(mp4|mov|avi|mkv|webm)$/)) return "VIDEO";

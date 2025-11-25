@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshBtn = document.getElementById('refresh-btn');
 
     let detectedFiles = [];
+    let lastScannedUrl = null; // Track the last URL we scanned
 
     // Initialize
     scanForFiles();
@@ -27,12 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
         fileList.innerHTML = '';
         statusDiv.textContent = "Refreshing...";
         downloadBtn.disabled = true;
+        lastScannedUrl = null; // Clear URL tracking
         scanForFiles();
     });
 
     function scanForFiles() {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const activeTab = tabs[0];
+
+            // Check if URL has changed (navigated to different class)
+            if (lastScannedUrl && lastScannedUrl !== activeTab.url) {
+                console.log("URL changed, clearing previous files");
+                detectedFiles = [];
+                fileList.innerHTML = '';
+            }
+            lastScannedUrl = activeTab.url;
+
             if (activeTab.url.includes("classroom.google.com")) {
                 statusDiv.textContent = "Scanning for files...";
 
@@ -100,26 +111,67 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        statusDiv.textContent = `Found ${files.length} files.`;
-        downloadBtn.disabled = false;
+        // Load settings to filter files
+        chrome.storage.sync.get({
+            fileTypes: {
+                pdf: true,
+                doc: true,
+                sheet: true,
+                slide: true,
+                image: true,
+                video: true,
+                zip: true,
+                binary: true
+            }
+        }, (settings) => {
+            // Filter files based on enabled types
+            const filteredFiles = files.filter(file => isFileTypeEnabled(file.type, settings.fileTypes));
 
-        files.forEach((file, index) => {
-            const item = document.createElement('div');
-            item.className = 'file-item';
+            if (filteredFiles.length === 0) {
+                statusDiv.textContent = `Found ${files.length} files, but none match your settings.`;
+                downloadBtn.disabled = true;
+                return;
+            }
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = true;
-            checkbox.dataset.index = index;
+            statusDiv.textContent = `Found ${filteredFiles.length} of ${files.length} files (filtered by settings).`;
+            downloadBtn.disabled = false;
 
-            const label = document.createElement('span');
-            label.textContent = `${file.title} (${file.type})`;
-            label.title = file.url;
+            filteredFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
 
-            item.appendChild(checkbox);
-            item.appendChild(label);
-            fileList.appendChild(item);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = true;
+                checkbox.dataset.index = files.indexOf(file); // Use original index
+
+                const label = document.createElement('span');
+                label.textContent = file.title; // Just show the title
+                label.title = file.url; // URL on hover
+
+                item.appendChild(checkbox);
+                item.appendChild(label);
+                fileList.appendChild(item);
+            });
         });
+    }
+
+    function isFileTypeEnabled(type, enabledTypes) {
+        switch (type) {
+            case "BINARY": return enabledTypes.binary;
+            case "DRIVE_LINK": return enabledTypes.binary;
+            case "DOC": return enabledTypes.doc;
+            case "SHEET": return enabledTypes.sheet;
+            case "SLIDE": return enabledTypes.slide;
+            case "OFFICE_DOC": return enabledTypes.doc;
+            case "OFFICE_SHEET": return enabledTypes.sheet;
+            case "OFFICE_SLIDE": return enabledTypes.slide;
+            case "PDF": return enabledTypes.pdf;
+            case "IMAGE": return enabledTypes.image;
+            case "VIDEO": return enabledTypes.video;
+            case "ZIP": return enabledTypes.zip;
+            default: return true;
+        }
     }
 
     downloadBtn.addEventListener('click', () => {

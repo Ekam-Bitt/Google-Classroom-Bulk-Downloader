@@ -51,11 +51,14 @@ function isFileTypeEnabled(type, enabledTypes) {
         case "DOC": return enabledTypes.doc;
         case "SHEET": return enabledTypes.sheet;
         case "SLIDE": return enabledTypes.slide;
+        case "OFFICE_DOC": return enabledTypes.doc; // Uploaded Word docs
+        case "OFFICE_SHEET": return enabledTypes.sheet; // Uploaded Excel files
+        case "OFFICE_SLIDE": return enabledTypes.slide; // Uploaded PowerPoint files
         case "PDF": return enabledTypes.pdf;
-        case "IMAGE": return enabledTypes.binary; // Group images with binary/other for now, or add specific setting
-        case "VIDEO": return enabledTypes.binary; // Group video with binary/other
-        case "ZIP": return enabledTypes.binary;   // Group zip with binary/other
-        default: return true; // Default to true if unknown
+        case "IMAGE": return enabledTypes.binary;
+        case "VIDEO": return enabledTypes.binary;
+        case "ZIP": return enabledTypes.binary;
+        default: return true;
     }
 }
 
@@ -65,7 +68,7 @@ function convertToDownloadUrl(url, type) {
         let id = "";
 
         // Extract ID based on type
-        if (type === "BINARY" || type === "DRIVE_LINK" || type === "PDF" || type === "IMAGE" || type === "VIDEO" || type === "ZIP") {
+        if (type === "BINARY" || type === "DRIVE_LINK" || type === "PDF" || type === "IMAGE" || type === "VIDEO" || type === "ZIP" || type === "OFFICE_DOC" || type === "OFFICE_SHEET" || type === "OFFICE_SLIDE") {
             // https://drive.google.com/file/d/<ID>/view
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match) {
