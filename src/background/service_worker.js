@@ -107,14 +107,33 @@ function convertToDownloadUrl(url, type) {
 
 
 function sanitizeFilename(title, type, folderName) {
-    // Remove illegal characters
-    let safeTitle = title.replace(/[<>:"/\\|?*]/g, "_").trim();
+    // Remove illegal characters and control characters
+    // < > : " / \ | ? * and ASCII 0-31
+    let safeTitle = title.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_");
+
+    // Normalize whitespace (replace multiple spaces with single space)
+    safeTitle = safeTitle.replace(/\s+/g, " ");
+
+    safeTitle = safeTitle.trim();
+
+    // Remove trailing periods and spaces (Windows/Mac safety)
+    safeTitle = safeTitle.replace(/[. ]+$/, "");
+
+    // Truncate if too long (keep extension room)
+    if (safeTitle.length > 200) {
+        safeTitle = safeTitle.substring(0, 200);
+    }
 
     // Append extension if missing
     if (type === "DOC" || type === "SHEET" || type === "SLIDE") {
         if (!safeTitle.toLowerCase().endsWith(".pdf")) {
             safeTitle += ".pdf";
         }
+    }
+
+    // Ensure we don't have an empty filename
+    if (safeTitle.length === 0) {
+        safeTitle = "untitled_file";
     }
 
     // Use configured folder name

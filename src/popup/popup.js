@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastScannedUrl = null; // Track the last URL we scanned
 
     // Initialize
+    const folderInput = document.getElementById('folder-name');
+
+    // Load folder name
+    chrome.storage.sync.get({ folderName: 'Classroom_Downloads' }, (items) => {
+        folderInput.value = items.folderName;
+    });
+
+    // Save folder name on change
+    folderInput.addEventListener('change', () => {
+        chrome.storage.sync.set({ folderName: folderInput.value });
+    });
+
     scanForFiles();
 
     settingsBtn.addEventListener('click', () => {
@@ -181,8 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const filesToDownload = detectedFiles.filter((_, index) => selectedIndices.includes(index));
 
         if (filesToDownload.length > 0) {
-            chrome.runtime.sendMessage({ action: "DOWNLOAD_FILES", files: filesToDownload }, (response) => {
-                statusDiv.textContent = `Started ${filesToDownload.length} downloads...`;
+            // Save the folder name first to ensure background script gets the latest
+            const currentFolderName = document.getElementById('folder-name').value;
+            chrome.storage.sync.set({ folderName: currentFolderName }, () => {
+                chrome.runtime.sendMessage({ action: "DOWNLOAD_FILES", files: filesToDownload }, (response) => {
+                    statusDiv.textContent = `Started ${filesToDownload.length} downloads...`;
+                });
             });
         } else {
             statusDiv.textContent = "No files selected.";

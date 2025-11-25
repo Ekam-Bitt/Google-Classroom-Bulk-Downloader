@@ -12,11 +12,10 @@ function saveOptions() {
         binary: document.getElementById('type-binary').checked
     };
 
-    const folderName = document.getElementById('folder-name').value;
+
 
     chrome.storage.sync.set({
-        fileTypes: fileTypes,
-        folderName: folderName
+        fileTypes: fileTypes
     }, () => {
         // Update status to let user know options were saved.
         const status = document.getElementById('status');
@@ -40,8 +39,7 @@ function restoreOptions() {
             video: true,
             zip: true,
             binary: true
-        },
-        folderName: 'Classroom_Downloads'
+        }
     }, (items) => {
         document.getElementById('type-pdf').checked = items.fileTypes.pdf;
         document.getElementById('type-doc').checked = items.fileTypes.doc;
@@ -51,7 +49,6 @@ function restoreOptions() {
         document.getElementById('type-video').checked = items.fileTypes.video;
         document.getElementById('type-zip').checked = items.fileTypes.zip;
         document.getElementById('type-binary').checked = items.fileTypes.binary;
-        document.getElementById('folder-name').value = items.folderName;
     });
 }
 

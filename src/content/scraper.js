@@ -138,18 +138,32 @@ function scrapeVisibleAttachments(accumulate = false) {
 }
 
 function extractTitle(anchor) {
-    // Try to get text content from the anchor itself
+    // 1. Try to get text content from the anchor itself
     let text = anchor.innerText.trim();
-    if (text) return text;
 
-    // Sometimes the title is in an aria-label
-    if (anchor.getAttribute('aria-label')) {
-        return anchor.getAttribute('aria-label');
+    // Split by newline to handle cases where "PDF" is on a separate line
+    // e.g. "PDF\nMyFile.pdf"
+    const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l);
+
+    // Prioritize lines ending in common extensions
+    const extRegex = /\.(pdf|docx?|xlsx?|pptx?|zip|rar|txt|jpg|png|mp4|mov)$/i;
+    const filenameLine = lines.find(l => extRegex.test(l));
+
+    if (filenameLine) return filenameLine;
+
+    // 2. Fallback: Try aria-label
+    const ariaLabel = anchor.getAttribute('aria-label');
+    if (ariaLabel) {
+        // Clean "Attachment: "
+        return ariaLabel.replace(/^Attachment:\s*/i, "");
     }
 
-    // Or in a child element
+    // 3. Or in a child element
     const titleElement = anchor.querySelector('[class*="title"], [class*="name"]');
     if (titleElement) return titleElement.innerText.trim();
+
+    // 4. Fallback to first line of text if available
+    if (lines.length > 0) return lines[0];
 
     return "Unknown File";
 }
