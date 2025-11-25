@@ -2,8 +2,10 @@
 
 A powerful Chrome extension that automatically extracts and downloads study materials (PDFs, Docs, Slides, Videos, etc.) from Google Classroom.
 
-![Version](https://img.shields.io/github/v/release/Ekam-Bitt/Google-Classroom-Bulk-Downloader)
+![GitHub Release](https://img.shields.io/github/v/release/Ekam-Bitt/Google-Classroom-Bulk-Downloader?include_prereleases)
 ![License](https://img.shields.io/github/license/Ekam-Bitt/Google-Classroom-Bulk-Downloader)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen)](./README.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
 ## 🚀 Features (V2)
 
