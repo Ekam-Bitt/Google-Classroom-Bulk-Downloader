@@ -26,4 +26,4 @@ jobs:
         with:
           artifacts: "extension.zip"
           generateReleaseNotes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
