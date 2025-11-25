@@ -21,9 +21,8 @@ jobs:
           zip -r extension.zip . -x "*.git*" ".github/*" ".gitignore" "README.md" "docs/*" "node_modules/*"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: extension.zip
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "extension.zip"
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
