@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Google Classroom Bulk Downloader",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Download all study materials from Google Classroom with a single click.",
   "permissions": [
     "activeTab",
