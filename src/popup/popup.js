@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshBtn = document.getElementById('refresh-btn');
 
     let detectedFiles = [];
+    let currentAuthUser = "0"; // Default authuser
     let lastScannedUrl = null; // Track the last URL we scanned
 
     // Initialize
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 chrome.tabs.sendMessage(activeTab.id, { action: "EXPAND_AND_SCRAPE" }, (response) => {
                                     handleResponse(response);
                                 });
-                            }, 100);
+                            }, 500);
                         });
                         return;
                     }
@@ -109,6 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (response.files) {
             detectedFiles = response.files;
+            if (response.authuser) {
+                currentAuthUser = response.authuser;
+                console.log("Detected authuser:", currentAuthUser);
+            }
             renderFiles(detectedFiles);
         } else {
             statusDiv.textContent = "No files found.";
@@ -196,7 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Save the folder name first to ensure background script gets the latest
             const currentFolderName = document.getElementById('folder-name').value;
             chrome.storage.sync.set({ folderName: currentFolderName }, () => {
-                chrome.runtime.sendMessage({ action: "DOWNLOAD_FILES", files: filesToDownload }, (response) => {
+                chrome.runtime.sendMessage({
+                    action: "DOWNLOAD_FILES",
+                    files: filesToDownload,
+                    authuser: currentAuthUser
+                }, (response) => {
                     statusDiv.textContent = `Started ${filesToDownload.length} downloads...`;
                 });
             });

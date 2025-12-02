@@ -11,8 +11,8 @@ if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessage)
             sendResponse({ files: files });
         } else if (request.action === "EXPAND_AND_SCRAPE") {
             // New V2 action: Expand then scrape
-            expandAndCollect().then((files) => {
-                sendResponse({ files: files });
+            expandAndCollect().then((result) => {
+                sendResponse(result);
             });
             return true; // Keep channel open for async response
         }
@@ -84,7 +84,11 @@ async function expandAndCollect() {
     scrapeVisibleAttachments(true);
 
     console.log(`[GC Downloader] Total unique files collected: ${collectedFiles.length}`);
-    return collectedFiles;
+    console.log(`[GC Downloader] Total unique files collected: ${collectedFiles.length}`);
+    return {
+        files: collectedFiles,
+        authuser: getAuthUser()
+    };
 }
 
 function scrapeVisibleAttachments(accumulate = false) {
@@ -193,4 +197,21 @@ function determineFileType(url, title) {
     if (url.includes("drive.google.com/open")) return "DRIVE_LINK"; // Generic Drive link
 
     return null;
+}
+
+function getAuthUser() {
+    // 1. Try to get from URL path: /u/1/
+    const pathMatch = window.location.pathname.match(/\/u\/(\d+)\//);
+    if (pathMatch) {
+        return pathMatch[1];
+    }
+
+    // 2. Try to get from query param: ?authuser=1
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('authuser')) {
+        return urlParams.get('authuser');
+    }
+
+    // Default to 0 if not found
+    return "0";
 }

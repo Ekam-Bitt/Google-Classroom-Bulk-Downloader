@@ -2,14 +2,14 @@
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "DOWNLOAD_FILES") {
-        downloadFiles(request.files);
+        downloadFiles(request.files, request.authuser);
         sendResponse({ status: "started" });
     }
     return true;
 });
 
 
-async function downloadFiles(files) {
+async function downloadFiles(files, authuser = "0") {
     // Get settings from storage
     const settings = await chrome.storage.sync.get({
         fileTypes: {
@@ -29,7 +29,7 @@ async function downloadFiles(files) {
             continue;
         }
 
-        const downloadUrl = convertToDownloadUrl(file.url, file.type);
+        const downloadUrl = convertToDownloadUrl(file.url, file.type, authuser);
         if (downloadUrl) {
             try {
                 await chrome.downloads.download({
@@ -62,7 +62,7 @@ function isFileTypeEnabled(type, enabledTypes) {
     }
 }
 
-function convertToDownloadUrl(url, type) {
+function convertToDownloadUrl(url, type, authuser = "0") {
     try {
         const urlObj = new URL(url);
         let id = "";
@@ -73,30 +73,30 @@ function convertToDownloadUrl(url, type) {
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match) {
                 id = match[1];
-                return `https://drive.google.com/uc?export=download&id=${id}`;
+                return `https://drive.google.com/uc?export=download&id=${id}&authuser=${authuser}`;
             }
             // Handle open?id= format
             const idParam = urlObj.searchParams.get("id");
             if (idParam) {
-                return `https://drive.google.com/uc?export=download&id=${idParam}`;
+                return `https://drive.google.com/uc?export=download&id=${idParam}&authuser=${authuser}`;
             }
         } else if (type === "DOC") {
             // https://docs.google.com/document/d/<ID>/edit
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match) {
-                return `https://docs.google.com/document/d/${match[1]}/export?format=pdf`;
+                return `https://docs.google.com/document/d/${match[1]}/export?format=pdf&authuser=${authuser}`;
             }
         } else if (type === "SHEET") {
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match) {
                 // For sheets, we need to specify the export format differently
-                return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=pdf&portrait=true&size=A4`;
+                return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=pdf&portrait=true&size=A4&authuser=${authuser}`;
             }
         } else if (type === "SLIDE") {
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match) {
                 // For slides, use the correct export path
-                return `https://docs.google.com/presentation/d/${match[1]}/export/pdf`;
+                return `https://docs.google.com/presentation/d/${match[1]}/export/pdf?authuser=${authuser}`;
             }
         }
     } catch (e) {
